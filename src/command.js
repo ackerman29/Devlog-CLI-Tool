@@ -104,7 +104,8 @@ yargs(hideBin(process.argv))
   .command(
     "switch-to <project>",
     "Switch to a different project context",
-    yargs => yargs.positional("project", {
+    yargs => yargs
+    .positional("project", {
       describe: "Project name to switch to",
       type: "string"
     }),

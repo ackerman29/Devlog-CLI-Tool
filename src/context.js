@@ -14,13 +14,13 @@ async function readContext(){
 async function writeContext(data){
   await fs.writeFile(CONTEXT_PATH, JSON.stringify(data, null, 2));
 }
-async function getCurrentTask() {
-  const ctx = await readContext();
-  if (!ctx.current || !ctx.projects[ctx.current]) {
-    return null;
-  }
-  return ctx.projects[ctx.current].current_task || "No active task";
-}
+// async function getCurrentTask() {
+//   const ctx = await readContext();
+//   if (!ctx.current || !ctx.projects[ctx.current]) {
+//     return null;
+//   }
+//   return ctx.projects[ctx.current].current_task || "No active task";
+// }
 async function updateContext(updates) {
   const ctx = await readContext();
   const project = ctx.current;
