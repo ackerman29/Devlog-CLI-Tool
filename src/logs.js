@@ -1,35 +1,8 @@
 import { getDB, saveDB, insert as dbInsert } from "./db.js";
-import path from "path";
-import { fileURLToPath } from 'url';
 import { updateContext } from "./context.js"; 
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const Db_PATH = path.join(__dirname, "db.json");
 
 
-async function readDB() {
-  try {
-    const file = await fs.readFile(DB_PATH, "utf-8");
-    return JSON.parse(file);
-  } catch (error) {
-    return { logs: [] };
-  }
-}
-
-async function writeDB(data) {
-  try {
-    await fs.writeFile(DB_PATH, JSON.stringify(data, null, 2));
-    console.log(`Successfully wrote to ${DB_PATH}`);
-  // } catch (error) {
-  //   console.error(` Failed to write to ${DB_PATH}:`, error.message);
-  //   
-  // }
-  } catch (error) {
-    console.error(` Failed to write to ${DB_PATH}:`, error.message);
-    throw error;
-  }
-}
 
 export const insert=async (newLog) => {
   console.log(`Saving log with ID: ${newLog.id}`);
@@ -38,6 +11,8 @@ export const insert=async (newLog) => {
   const db = await getDB();
   console.log(`Total logs in Db: ${db.logs.length}`);
 };
+
+
 export const getAllLogs= async() => {
   const db = await getDB();
   return db.logs || [];
@@ -50,8 +25,10 @@ export const findLog = async (id) => {
 
 export const deleteLog = async(id) => {
   const db = await getDB();
+  const initialLength = db.logs.length;
   db.logs = db.logs.filter((log)=> log.id !== id);
   await saveDB(db);
+  return db.logs.length < initialLength;
 };
 
 export const deleteAllLogs = async () => {

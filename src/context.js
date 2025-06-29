@@ -1,9 +1,11 @@
 import fs from "fs/promises";
+const CONTEXT_PATH = "./.context.json";
 
 
 async function readContext(){
   try {
-    const data = await fs.readFile("utf-8");
+    const data = await fs.readFile(CONTEXT_PATH, "utf-8");
+
     return JSON.parse(data);
   } catch {
     return { current: null, projects:{} };
@@ -24,14 +26,17 @@ async function updateContext(updates) {
   const project = ctx.current;
   if (!project) return;
   const currentData = ctx.projects[project]|| {};
-  ctx.projects[project]= {
-    ...currentData,
-    ...updates,
-    timestamp: Date.now(), 
-  };
+  ctx.projects[project] = {
+  ...currentData,
+  ...updates,
+  timestamp: Date.now(),
+};
+await writeContext(ctx);
+
 }
 async function getContext() {
-  return readContext();
+  return await readContext();
+
 }
 async function switchProject(projectName, lastNote = "") {
   const ctx = await readContext();
