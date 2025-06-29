@@ -1,0 +1,2 @@
+to link globally: npm link
+to unlink: rm -f /opt/homebrew/bin/devlog                

@@ -7,7 +7,6 @@ import {
   deleteLog,
   deleteAllLogs,
 } from "./logs.js";
-import { start } from "./server.js";
 import { switchProject, getContext } from "./context.js";
 import { updateContext } from "./context.js";
 

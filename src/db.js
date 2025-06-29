@@ -1,11 +1,11 @@
 import fs from "node:fs/promises";
 import { fileURLToPath }from "node:url";
 
-const Db_Path= fileURLToPath("../db.json",import.meta.url);
+const Db_Path= fileURLToPath(new URL("../db.json", import.meta.url));
 
 export const getDB = async () => {
   try {
-    const db = await fs.readFile(DB_Path, "utf-8");
+    const db = await fs.readFile(Db_Path, "utf-8");
     if (!db.trim()) {
       console.log("Database file is empty, initializing with default structure");
       const defaultDB = { logs: [] };
