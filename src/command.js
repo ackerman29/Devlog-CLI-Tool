@@ -144,7 +144,7 @@ yargs(hideBin(process.argv))
         const recentLogs = projectLogs.slice(-3); 
         console.log(`\n Recent Activity:`);
         recentLogs.forEach(log => {
-          const timeAgo = Math.round((Date.now() - log.id) / (1000 * 60));
+          const timeAgo = Math.round((Date.now() - log.id) /(60000));
           console.log(`  • "${log.content}" (${timeAgo}m ago)`);
         });
       }
@@ -174,7 +174,7 @@ yargs(hideBin(process.argv))
         const recent = projectLogs.slice(-5);
         recent.forEach((log, i)=> 
           {
-          const timeAgo = Math.round((Date.now() - log.id)/(1000 * 60));
+          const timeAgo = Math.round((Date.now() - log.id)/(60000));
           console.log(`  ${i + 1}. "${log.content}" (${timeAgo}m ago)`);
         });
       }
