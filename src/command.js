@@ -200,6 +200,73 @@ yargs(hideBin(process.argv))
       start(logs, argv.port);
     }
   )
+  .command(
+  "search [query]",
+  "Search through your dev logs",
+  (yargs) =>
+    yargs
+      .positional("query", {
+        describe: "Text to search for in log content",
+        type: "string",
+      })
+      .option("project", {
+        alias: "p",
+        type: "string",
+        description: "Filter by project name",
+      })
+      .option("author", {
+        alias: "a",
+        type: "string", 
+        description: "Filter by author name",
+      })
+      .option("tags", {
+        alias: "t",
+        type: "string",
+        description: "Filter by tags (comma-separated)",
+      })
+      .option("after", {
+        type: "string",
+        description: "Show logs after this date (YYYY-MM-DD)",
+      })
+      .option("before", {
+        type: "string", 
+        description: "Show logs before this date (YYYY-MM-DD)",
+      })
+      .option("limit", {
+        alias: "l",
+        type: "number",
+        description: "Limit number of results",
+        default: 50,
+      })
+      .example("devlog search 'bug fix'", "Search for logs containing 'bug fix'")
+      .example("devlog search --project myapp", "Show all logs from 'myapp' project")
+      .example("devlog search --author john --tags bug", "Find logs by John with 'bug' tag")
+      .example("devlog search api --after 2024-01-01", "Search for 'api' in logs after Jan 1, 2024"),
+  async (argv) => {
+    try {
+      const searchOptions = {
+        project: argv.project,
+        author: argv.author,
+        tags: argv.tags,
+        after: argv.after,
+        before: argv.before,
+      };
+      
+      const results = await searchLogs(argv.query, searchOptions);
+      
+      // Apply limit
+      const limitedResults = argv.limit ? results.slice(0, argv.limit) : results;
+      
+      listSearchResults(limitedResults, argv.query, searchOptions);
+      
+      if (results.length > argv.limit) {
+        console.log(`\n💡 Showing first ${argv.limit} results. Use --limit to see more.`);
+      }
+    } catch (error) {
+      console.error("❌ Search failed:", error.message);
+    }
+  }
+)
 
   .demandCommand(1)
   .parse();
