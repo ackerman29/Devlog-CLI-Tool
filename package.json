@@ -13,6 +13,7 @@
   "license": "ISC",
   "description": "A CLI tool to track your developer logs and notes.",
   "dependencies": {
+    "fuse.js": "^7.1.0",
     "yargs": "^17.7.2"
   },
   "devDependencies": {

@@ -9,6 +9,8 @@ import {
 } from "./logs.js";
 import { switchProject, getContext } from "./context.js";
 import { updateContext } from "./context.js";
+import { searchLogs, listSearchResults } from './search.js';
+
 
 const listLogs = (logs) => {
   logs.forEach((log) => {
@@ -202,7 +204,7 @@ yargs(hideBin(process.argv))
   )
   .command(
   "search [query]",
-  "Search through your dev logs",
+  "Search through your dev logs with fuzzy matching",
   (yargs) =>
     yargs
       .positional("query", {
@@ -238,10 +240,21 @@ yargs(hideBin(process.argv))
         description: "Limit number of results",
         default: 50,
       })
-      .example("devlog search 'bug fix'", "Search for logs containing 'bug fix'")
+      .option("exact", {
+        alias: "e",
+        type: "boolean",
+        description: "Use exact matching instead of fuzzy search",
+        default: false,
+      })
+      .option("threshold", {
+        type: "number",
+        description: "Fuzzy search threshold (0.0-1.0, lower = more strict)",
+        default: 0.4,
+      })
+      .example("devlog search 'bug fix'", "Fuzzy search for logs containing 'bug fix'")
       .example("devlog search --project myapp", "Show all logs from 'myapp' project")
-      .example("devlog search --author john --tags bug", "Find logs by John with 'bug' tag")
-      .example("devlog search api --after 2024-01-01", "Search for 'api' in logs after Jan 1, 2024"),
+      .example("devlog search api --exact", "Exact search for 'api'")
+      .example("devlog search 'algoritm' --threshold 0.2", "Strict fuzzy search (finds 'algorithm')"),
   async (argv) => {
     try {
       const searchOptions = {
@@ -250,6 +263,8 @@ yargs(hideBin(process.argv))
         tags: argv.tags,
         after: argv.after,
         before: argv.before,
+        exact: argv.exact,
+        threshold: argv.threshold,
       };
       
       const results = await searchLogs(argv.query, searchOptions);

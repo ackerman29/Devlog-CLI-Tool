@@ -37,6 +37,17 @@
       "author": "noiya",
       "project": "test-b",
       "id": 1751177113530
+    },
+    {
+      "tags": [
+        "frontend",
+        "css",
+        "mobile"
+      ],
+      "content": "Fixed responsive design issue on mobile devices",
+      "author": "john",
+      "project": "test-a",
+      "id": 1751699299676
     }
   ]
 }
