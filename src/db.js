@@ -2,7 +2,7 @@ const fs = require("fs").promises;
 const path = require("path");
 const os = require("os");
 
-const Db_Path = path.join(os.homedir(), ".devlog", "db.json");
+const Db_Path = path.join(os.homedir(), ".devtrack", "db.json");
 
 const ensureDbDir = async () => {
   const dir = path.dirname(Db_Path);

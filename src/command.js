@@ -131,7 +131,7 @@ yargs(hideBin(process.argv))
     async () => {
       const ctx = await getContext();
       if (!ctx.current) {
-        console.log("No active project. Use `devlog switch-to <project>`");
+        console.log("No active project. Use `dev switch-to <project>`");
         return;
       }
       
@@ -161,7 +161,7 @@ yargs(hideBin(process.argv))
     async () => {
       const ctx = await getContext();
       if (!ctx.current) {
-        console.log("No active project. Use `devlog switch-to <project>` first.");
+        console.log("No active project. Use `dev switch-to <project>` first.");
         return;
       }
       
@@ -239,10 +239,10 @@ yargs(hideBin(process.argv))
         description: "Fuzzy search threshold (0.0-1.0, lower = more strict)",
         default: 0.4,
       })
-      .example("devlog search 'bug fix'", "Fuzzy search for logs containing 'bug fix'")
-      .example("devlog search --project myapp", "Show all logs from 'myapp' project")
-      .example("devlog search api --exact", "Exact search for 'api'")
-      .example("devlog search 'algoritm' --threshold 0.2", "Strict fuzzy search (finds 'algorithm')"),
+      .example("dev search 'bug fix'", "Fuzzy search for logs containing 'bug fix'")
+      .example("dev search --project myapp", "Show all logs from 'myapp' project")
+      .example("dev search api --exact", "Exact search for 'api'")
+      .example("dev search 'algoritm' --threshold 0.2", "Strict fuzzy search (finds 'algorithm')"),
   async (argv) => {
     try {
       const searchOptions = {

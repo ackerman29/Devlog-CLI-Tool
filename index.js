@@ -4,7 +4,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 
-const welcomePath = path.join(os.homedir(), ".devlog", ".welcome-shown");
+const welcomePath = path.join(os.homedir(), ".devtrack", ".welcome-shown");
 
 // Show welcome screen only on first run
 if (!fs.existsSync(welcomePath)) {
@@ -16,19 +16,19 @@ if (!fs.existsSync(welcomePath)) {
 ✨ Quick Start:
 
   • Create a new log (without an existing project):
-      devlog new "Fixed navbar issue" -t bug,ui -a "Rupanjan"
+      dev new "Fixed navbar issue" -t bug,ui -a "Rupanjan"
         ↳  -t = --tags (comma-separated)
         ↳  -a = --author
 
   • Create a new log under a new project:
-      devlog switch-to MyProject
-      devlog new "Fixed navbar issue" -t bug,ui -a "Rupanjan"
+      dev switch-to MyProject
+      dev new "Fixed navbar issue" -t bug,ui -a "Rupanjan"
         ↳  -t = --tags (comma-separated)
         ↳  -a = --author
         (This log will be saved under the project "MyProject")
 
   • Want to Switch projects?:
-      devlog switch-to "MyProject2"
+      dev switch-to "MyProject2"
       devlog switch-to "MyProject1"
       
   • View current context/project:

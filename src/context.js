@@ -2,7 +2,7 @@ const fs = require("fs").promises;
 const path = require("path");
 const os = require("os");
 
-const CONTEXT_PATH = path.join(os.homedir(), ".devlog", ".context.json");
+const CONTEXT_PATH = path.join(os.homedir(), ".devtrack", ".context.json");
 
 async function ensureContextDir() {
   const dir = path.dirname(CONTEXT_PATH);
