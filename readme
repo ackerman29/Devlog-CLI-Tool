@@ -5,7 +5,8 @@
 ## 🧠 Ever feel lost coming back to a project after a few days?
 
 As a developer, I've often felt the frustration of returning to a project after a few days and thinking,  
-**"What was I even doing here?"**  
+**"What was I even doing here?"**
+
 Git commits brilliantly track code changes, but they rarely capture the **thought process, debugging notes, or design decisions** that are crucial to our work.
 
 We often scribble scattered notes or, worse, completely forget those "aha!" moments.  
@@ -14,7 +15,8 @@ Our thoughts are inherently **task-oriented**, and the act of writing them down 
 That's why I built **DevLog CLI** 🛠️  
 A simple, lightweight command-line tool that lets you log your **ideas, blockers, bugs, and progress notes — completely independent of Git.**  
 Think of it as **"committing your brain," not just your code."**
-It's just a fun little tool I made for myself - sharing in case it helps anyone else!  
+
+It's just a fun little tool I made for myself — sharing in case it helps anyone else!
 
 ---
 
@@ -33,32 +35,23 @@ It's just a fun little tool I made for myself - sharing in case it helps anyone 
 
 Git is great for code versioning, but:
 
-- 🔒 It's tied to a repo
-- 🧠 It doesn’t track your thought process, just your code
-- 📄 You can’t log ideas, questions, or side notes unrelated to a commit
+- 🔒 It's tied to a repo  
+- 🧠 It doesn’t track your thought process, just your code  
+- 📄 You can’t log ideas, questions, or side notes unrelated to a commit  
 
-DevLog is:
-- 🧠 For your brain, not just your code
-- 🛠️ Lightweight and always available
-- 💬 Perfect for journaling, debugging, tracking blockers, and quick ideas
+**DevLog is:**
+
+- 🧠 For your brain, not just your code  
+- 🛠️ Lightweight and always available  
+- 💬 Perfect for journaling, debugging, tracking blockers, and quick ideas  
 
 ---
 
 ## 🚀 Installation
 
-Install globally via npm:
-
 ```bash
 npm install -g devlog-cli
-```
 
----
-
-## 📚 Usage Examples
-
-Here's a typical dev workflow using `devlog`:
-
-```bash
 # 1. Switch context to your 'ChatbotApp' project
 devlog switch-to ChatbotApp
 
@@ -97,31 +90,3 @@ devlog search --project ExpenseTracker --tags design
 
 # 13. View all logs associated with your current project context
 devlog all
-```
-
----
-
-## 🧪 Bonus Tips
-
-- Use `-t` or `--tags` to add multiple context tags (e.g., `bug,design,note`)
-- You can even use it as a personal daily journal or learning tracker
-
----
-
-## 💬 Feedback
-
-I'd love to hear how you use this or what features you'd want next!
-
----
-
-## 📦 Install now
-
-```bash
-npm install -g devlog-cli
-```
-
-Then start with:
-
-```bash
-devlog new "First log entry!" -t idea -a "YourName"
-```
