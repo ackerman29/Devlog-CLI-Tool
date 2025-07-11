@@ -18,6 +18,8 @@ Think of it as **"committing your brain," not just your code."**
 
 It's just a fun little tool I made for myself — sharing in case it helps anyone else!
 
+
+
 ---
 
 ## ✨ Features
@@ -90,3 +92,7 @@ devlog search --project ExpenseTracker --tags design
 
 # 13. View all logs associated with your current project context
 devlog all
+
+```
+Let me know what you think! Your feedback would be invaluable.
+
