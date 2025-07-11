@@ -48,12 +48,17 @@ Git is great for code versioning, but:
 - 💬 Perfect for journaling, debugging, tracking blockers, and quick ideas  
 
 ---
+##  NPM Package
+
+https://www.npmjs.com/package/devlog-cli-tool?activeTab=readme
 
 ## 🚀 Installation
 
 ```bash
 npm install -g devlog-cli
-
+```
+## 🚀 A Real life Simulated Version of a Dev
+```bash
 # 1. Switch context to your 'ChatbotApp' project
 devlog switch-to ChatbotApp
 
