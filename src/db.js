@@ -15,7 +15,7 @@ const ensureDbDir = async () => {
 
 const getDB = async () => {
     await ensureDbDir(); 
-    console.log("Reading from:", Db_Path);
+    // console.log("Reading from:", Db_Path);
   try {
     const db = await fs.readFile(Db_Path, "utf-8");
     if (!db.trim()) {
@@ -44,7 +44,7 @@ const getDB = async () => {
 
 const saveDB = async (db) => {
    await ensureDbDir();
-   console.log("Saving to:", Db_Path);
+  //  console.log("Saving to:", Db_Path);
   await fs.writeFile(Db_Path, JSON.stringify(db, null, 2));
   return db;
 };
