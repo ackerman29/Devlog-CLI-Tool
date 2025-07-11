@@ -1,2 +1,119 @@
-to link globally: npm link
-to unlink: rm -f /opt/homebrew/bin/devlog                
+# DevLog CLI 🛠️
+
+As a developer, I've often felt the frustration of returning to a project after a few days and thinking, "What was I even doing here?" Git commits brilliantly track code changes, but they rarely capture the thought process, debugging notes, or design decisions that are crucial to our work.
+
+We often scribble scattered notes or, worse, completely forget those "aha!" moments. Our thoughts are inherently task-oriented, and the act of writing them down solidifies our understanding.
+
+That's why I built DevLog CLI 🛠️.
+
+DevLog is a simple, lightweight command-line tool that lets you log your ideas, blockers, bugs, and progress notes — completely independent of Git. Think of it as "committing your brain," not just your code.
+
+## Features
+
+Here's what DevLog CLI offers:
+* ✅ Tag logs with bug, fix, idea, note, and more.
+* ✅ Remembers your last active project context for seamless switching.
+* ✅ Fuzzy search to quickly find any past thought or note.
+* ✅ Logs grouped per project – no repo required!
+
+Unlike Git, with DevLog CLI you can:
+* Log anything, even if it's not a code change.
+* Forget about repo, branch, or remote setup overhead.
+* Use it for solo work, brainstorming, debugging, or even daily journaling.
+
+Whether you're planning a new feature, debugging a tricky bug, or reflecting on your day's work, devlog helps capture your workflow thinking as you go.
+
+I'm incredibly excited to share this with you all and hope it helps streamline your development process as much as it has mine.
+
+## Installation
+
+```bash
+npm install -g devlog-cli
+devlog new "Fixed flaky login bug" -t bug -a "YourName"
+```
+
+## Using Tags Effectively
+
+💡 **Pro Tip:** Use Tags Effectively
+Tags are your personal organization system.
+When logging, use -t or --tags to add categories like:
+  - bug, fix, idea, note, question, todo, refactor, design
+
+Example:
+```bash
+devlog new "Need to refactor auth middleware" -t refactor,backend -a "YourName"
+```
+
+## Smart Search with Filters
+
+🔍 **Smart Search with Filters**
+
+You can search across your logs with fuzzy matching and **powerful filters**:
+
+Examples:
+```bash
+devlog search "auth bug" -a "Rupanjan" -t bug --project backend
+devlog search "refactor" --after "2024-01-01" --before "2024-12-31"
+```
+
+Available filters:
+  - `-a`, `--author`     → Filter logs by author
+  - `-t`, `--tags`       → Comma-separated tags (e.g., fix,bug,idea)
+  - `--project`          → Filter logs from a specific project
+  - `--after`/`--before` → Filter by date range (ISO format or YYYY-MM-DD)
+
+Why filters?
+✅ Narrow down relevant logs quickly  
+✅ Great for retrospectives and bug tracking  
+✅ Saves time when context-switching
+
+Combine filters with fuzzy search to get **exactly what you need**, fast.
+
+## Usage Examples
+
+A typical use case:
+
+```bash
+# Switch context to ChatbotApp
+devlog switch-to ChatbotApp
+
+# Log an initial idea
+devlog new "Thinking of using WebSockets for real-time chat; polling feels clunky." -t idea -a "Rupanjan"
+
+# Log a bug you're facing
+devlog new "Chat lags when user types fast — maybe debounce input handlers?" -t bug -a "Rupanjan"
+
+# Log a temporary note before break
+devlog new "Investigating message throttling strategy to stabilize UI." -t note -a "Rupanjan"
+
+# View current context
+devlog context
+
+# Resume next day
+devlog resume
+
+# Switch to a new project
+devlog switch-to ExpenseTracker
+
+# Log design decisions
+devlog new "Choosing between localStorage or IndexedDB for offline sync." -t design -a "Rupanjan"
+
+# Log tasks to plan next sprint
+devlog new "Need to build export-to-CSV feature. Targeting admin dashboard first." -t task -a "Rupanjan"
+
+# Resume later
+devlog resume
+
+# Fuzzy search across all logs
+devlog search "chat"
+
+# Search only in ExpenseTracker project and with tag 'design'
+devlog search --project ExpenseTracker --tags design
+
+# View logs of current context
+devlog all
+```
+
+## Feedback
+
+Let me know what you think! Your feedback would be invaluable.
