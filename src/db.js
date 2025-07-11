@@ -1,9 +1,21 @@
-import fs from "node:fs/promises";
-import { fileURLToPath }from "node:url";
+const fs = require("fs").promises;
+const path = require("path");
+const os = require("os");
 
-const Db_Path= fileURLToPath(new URL("../db.json", import.meta.url));
+const Db_Path = path.join(os.homedir(), ".devlog", "db.json");
 
-export const getDB = async () => {
+const ensureDbDir = async () => {
+  const dir = path.dirname(Db_Path);
+  try {
+    await fs.mkdir(dir, { recursive: true });
+  } catch (err) {
+    if (err.code !== "EEXIST") throw err;
+  }
+};
+
+const getDB = async () => {
+    await ensureDbDir(); 
+    console.log("Reading from:", Db_Path);
   try {
     const db = await fs.readFile(Db_Path, "utf-8");
     if (!db.trim()) {
@@ -30,11 +42,13 @@ export const getDB = async () => {
   }
 };
 
-export const saveDB =async(db)=>{
+const saveDB = async (db) => {
+   await ensureDbDir();
+   console.log("Saving to:", Db_Path);
   await fs.writeFile(Db_Path, JSON.stringify(db, null, 2));
   return db;
 };
-export const insert =async (data)=>{
+const insert = async (data) => {
   const db =await getDB();
 
   if (!db.logs) db.logs= [];
@@ -43,4 +57,9 @@ export const insert =async (data)=>{
   
   await saveDB(db);
   return data;
+};
+module.exports = {
+  getDB,
+  saveDB,
+  insert
 };

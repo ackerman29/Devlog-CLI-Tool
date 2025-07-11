@@ -1,15 +1,17 @@
-import yargs from "yargs";
-import { hideBin } from "yargs/helpers";
-import {
+const yargs = require("yargs");
+const { hideBin } = require("yargs/helpers");
+
+const {
   newLog,
   getAllLogs,
   findLog,
   deleteLog,
   deleteAllLogs,
-} from "./logs.js";
-import { switchProject, getContext } from "./context.js";
-import { updateContext } from "./context.js";
-import { searchLogs, listSearchResults } from './search.js';
+} = require("./logs.js");
+
+const { switchProject, getContext, updateContext } = require("./context.js");
+
+const { searchLogs, listSearchResults } = require("./search.js");
 
 
 const listLogs = (logs) => {
@@ -105,7 +107,7 @@ yargs(hideBin(process.argv))
   )
   .command(
     "switch-to <project>",
-    "Switch to a different project context",
+    "Switch to a different project / create a new one",
     yargs => yargs
     .positional("project", {
       describe: "Project name to switch to",
@@ -187,21 +189,7 @@ yargs(hideBin(process.argv))
 
 
   
-  .command(
-    "web [port]",
-    "Launch a web view to browse your logs",
-    (yargs) =>
-      yargs.positional("port", {
-        describe: "Port number to host the web UI",
-        // default: 7000,
-         default: 8000,
-        type: "number",
-      }),
-    async (argv) => {
-      const logs = await getAllLogs();
-      start(logs, argv.port);
-    }
-  )
+ 
   .command(
   "search [query]",
   "Search through your dev logs with fuzzy matching",

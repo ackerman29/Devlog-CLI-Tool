@@ -1,10 +1,10 @@
-import { getDB, saveDB, insert as dbInsert } from "./db.js";
-import { updateContext } from "./context.js"; 
+const { getDB, saveDB, insert: dbInsert } = require("./db.js");
+const { updateContext } = require("./context.js");
 
 
 
 
-export const insert=async (newLog) => {
+const insert = async (newLog) => {
   console.log(`Saving log with ID: ${newLog.id}`);
   
   await dbInsert(newLog);
@@ -13,17 +13,17 @@ export const insert=async (newLog) => {
 };
 
 
-export const getAllLogs= async() => {
+const getAllLogs = async () => {
   const db = await getDB();
   return db.logs || [];
 };
-export const findLog = async (id) => {
+ const findLog = async (id) => {
   const db = await getDB();
   return db.logs.filter((log) => log.id === id);
 };
 
 
-export const deleteLog = async(id) => {
+ const deleteLog = async(id) => {
   const db = await getDB();
   const initialLength = db.logs.length;
   db.logs = db.logs.filter((log)=> log.id !== id);
@@ -31,13 +31,13 @@ export const deleteLog = async(id) => {
   return db.logs.length < initialLength;
 };
 
-export const deleteAllLogs = async () => {
+ const deleteAllLogs = async () => {
   const db = await getDB();
   db.logs = [];
   await saveDB(db);
 };
 
-export const newLog = async (entry, tags, author, project="default") => {
+ const newLog = async (entry, tags, author, project="default") => {
   const data = {
     tags,
     content: entry,
@@ -50,7 +50,7 @@ export const newLog = async (entry, tags, author, project="default") => {
   return data;
 };
 
-export const searchLogs = async (query, options = {}) => {
+ const searchLogs = async (query, options = {}) => {
   const db = await getDB();
   const logs = db.logs || [];
   
@@ -130,7 +130,7 @@ const getRelevanceScore = (log, query) => {
   return score;
 };
 
-export const listSearchResults = (logs, query, options = {}) => {
+ const listSearchResults = (logs, query, options = {}) => {
   if (logs.length === 0) {
     console.log("No logs found matching your search criteria.");
     return;
@@ -176,4 +176,14 @@ export const listSearchResults = (logs, query, options = {}) => {
       console.log("─".repeat(30));
     }
   });
+};
+module.exports = {
+  insert,
+  getAllLogs,
+  findLog,
+  deleteLog,
+  deleteAllLogs,
+  newLog,
+  searchLogs,
+  listSearchResults
 };

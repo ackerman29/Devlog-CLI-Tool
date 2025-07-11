@@ -1,22 +1,19 @@
 {
-  "name": "devtool-node-cli-app",
-  "version": "1.0.0",
+  "name": "devlog-cli-tool",
+  "version": "1.0.2",
+  "description": "A CLI tool to track your developer logs and notes.",
   "main": "index.js",
-  "type": "module",
   "bin": {
     "devlog": "./index.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
-  "description": "A CLI tool to track your developer logs and notes.",
+  "author": "Your Name",
+  "license": "MIT",
   "dependencies": {
+    "chalk": "^4.1.2",
     "fuse.js": "^7.1.0",
     "yargs": "^17.7.2"
-  },
-  "devDependencies": {
-    "open": "^10.1.0"
   }
 }

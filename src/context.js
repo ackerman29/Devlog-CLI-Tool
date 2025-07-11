@@ -1,8 +1,22 @@
-import fs from "fs/promises";
-const CONTEXT_PATH = "./.context.json";
+const fs = require("fs").promises;
+const path = require("path");
+const os = require("os");
+
+const CONTEXT_PATH = path.join(os.homedir(), ".devlog", ".context.json");
+
+async function ensureContextDir() {
+  const dir = path.dirname(CONTEXT_PATH);
+  try {
+    await fs.mkdir(dir, { recursive: true });
+  } catch (err) {
+    if (err.code !== "EEXIST") throw err;
+  }
+}
 
 
 async function readContext(){
+    await ensureContextDir();
+
   try {
     const data = await fs.readFile(CONTEXT_PATH, "utf-8");
 
@@ -12,6 +26,7 @@ async function readContext(){
   }
 }
 async function writeContext(data){
+    await ensureContextDir();
   await fs.writeFile(CONTEXT_PATH, JSON.stringify(data, null, 2));
 }
 // async function getCurrentTask() {
@@ -53,8 +68,8 @@ async function switchProject(projectName, lastNote = "") {
 
 
 
-export{
+module.exports = {
   switchProject,
-updateContext,
-    getContext,
+  updateContext,
+  getContext,
 };

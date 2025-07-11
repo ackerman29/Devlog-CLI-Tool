@@ -1,7 +1,9 @@
-import { getAllLogs } from './logs.js';
-import Fuse from 'fuse.js';
+const { getAllLogs } = require('./logs.js');
+const Fuse = require('fuse.js');
+const chalk = require("chalk");
 
-export async function searchLogs(query, options = {}) {
+
+ async function searchLogs(query, options = {}) {
   try {
     const start = process.hrtime();
     
@@ -63,38 +65,42 @@ export async function searchLogs(query, options = {}) {
   }
 }
 
-// Enhanced search results display
-export async function listSearchResults(results, query, options) {
+ async function listSearchResults(results, query, options) {
   if (results.length === 0) {
-    console.log(`\n No results found for "${query}"`);
+    console.log(chalk.red(`\n No results found for "${query}"`));
     if (Object.keys(options).some(key => options[key])) {
-      console.log(" Try broadening your search criteria or reducing filters");
+      console.log(chalk.yellow(" Try broadening your search criteria or reducing filters"));
     }
     return;
   }
-  
-  console.log(`\n Search Results (${results.length} found):`);
-  console.log("=" * 50);
-  
+
+  console.log(chalk.green(`\n Search Results (${results.length} found):`));
+  console.log(chalk.gray("=".repeat(50)));
+
   results.forEach((log, index) => {
-    console.log(`\n${index + 1}. ${log.title || 'Untitled'}`);
-    console.log(`    ${log.timestamp || 'No date'}`);
-    console.log(`    ${log.author || 'Unknown'}`);
-    console.log(`    ${log.tags ? log.tags.join(', ') : 'No tags'}`);
-    console.log(`    ${log.project || 'No project'}`);
-    
-    // Show relevance score if available
-    if (log._searchScore !== undefined) {
-      const relevance = Math.round((1 - log._searchScore) * 100);
-      console.log(`    Relevance: ${relevance}%`);
-    }
-    
-    const preview = log.content.length > 100 ? 
-      log.content.substring(0, 100) + '...' : log.content;
-    console.log(`    ${preview}`);
-    
+    const date = new Date(log.id).toLocaleString();
+    const relevance = log._searchScore !== undefined
+      ? `${Math.round((1 - log._searchScore) * 100)}%`
+      : "N/A";
+
+    console.log(chalk.cyan(`\n${index + 1}. ${chalk.bold(date)}`));
+    console.log(`    ${chalk.magenta("Author")}: ${log.author || chalk.gray('Unknown')}`);
+    console.log(`    ${chalk.magenta("Tags")}: ${log.tags ? log.tags.join(', ') : chalk.gray('No tags')}`);
+    console.log(`    ${chalk.magenta("Project")}: ${log.project || chalk.gray('No project')}`);
+    console.log(`    ${chalk.yellow("Relevance")}: ${relevance}`);
+
+    const preview = log.content.length > 100
+      ? log.content.substring(0, 100) + '...'
+      : log.content;
+    console.log(`    ${chalk.white(preview)}`);
+
     if (log._matches && log._matches.length > 0) {
-      console.log(`    Matches: ${log._matches.length} found`);
+      console.log(`    ${chalk.green(`Matches: ${log._matches.length} found`)}`);
     }
   });
 }
+
+module.exports = {
+  searchLogs,
+  listSearchResults
+};
