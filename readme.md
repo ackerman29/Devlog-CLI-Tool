@@ -2,103 +2,129 @@
 
 ---
 
-## 🧠 Ever feel lost coming back to a project after a few days?
+## 🧐 Ever feel lost coming back to a project after a few days?
 
-As a developer, I've often felt the frustration of returning to a project after a few days and thinking,  
+As developers, we often return to a project after a break and think:
 **"What was I even doing here?"**
 
-Git commits brilliantly track code changes, but they rarely capture the **thought process, debugging notes, or design decisions** that are crucial to our work.
+Git commits brilliantly track code changes, but they rarely capture the **thought process, debugging insights, or design decisions** that are critical to our work.
 
-We often scribble scattered notes or, worse, completely forget those "aha!" moments.  
-Our thoughts are inherently **task-oriented**, and the act of writing them down solidifies our understanding.
+We scribble random notes in Notion, sticky notes, or worse — lose track entirely.
+Our brains work **task-by-task**, and writing them down helps retain clarity.
 
-That's why I built **Devtrack CLI** 🛠️  
-A simple, lightweight command-line tool that lets you log your **ideas, blockers, bugs, and progress notes — completely independent of Git.**  
-Think of it as **"committing your brain," not just your code."**
-
-It's just a fun little tool I made for myself — sharing in case it helps anyone else!
-
-
+That's why I built **Devtrack CLI** 🛠️
+A simple command-line tool to log your **ideas, blockers, bugs, notes, and progress** independently of Git.
+Think of it as **"committing your thoughts," not just your code.**
 
 ---
 
-## ✨ Features
+## ✨ What's New & Improved?
 
-✅ Tag logs with categories like `bug`, `fix`, `idea`, `note`, `design`, `task`, and more  
-✅ Remembers your last active project context for seamless switching  
-✅ Fuzzy search to quickly find any past thought or note  
-✅ Logs grouped per project – no repo required  
-✅ Context switching with `switch-to` and `resume` commands  
-✅ Filtered search with tags, project, author, or date  
+### 🌐 Global & Local Databases
+
+* Store logs **locally** inside project folders or **globally** for cross-project memory
+* Use `--global` flag or `--scope` to switch views and searches
+
+### 🔍 Powerful Search
+
+* Fuzzy search across **local**, **global**, or **all** logs
+* Smart filters: search by project, author, tags, or date range
+* Search even with **numerics and special characters** now
+
+### 🎨 Smart Tagging & Context
+
+* Tag logs as per your choice: `bug`, `task`, `design`, `note`, `idea`, etc.
+* Auto-registers your project when logging from a new folder
+* Seamless `context` & `resume` flow to avoid context-switch fatigue
+
+### ➕ New Commands
+
+* `dev switch-to <project>` – switch context manually
+* `dev resume` – return to your last working context
+* `dev all` – view logs from `local`, `global`, or `all` scopes
+* `dev search` – fuzzy or exact search with `--scope`, `--tags`, `--author`, etc.
+* `dev clean` – clean logs if database reaches a certain size threshold
 
 ---
-
-## ❓ Why not just Git?
-
-Git is great for code versioning, but:
-
-- 🔒 It's tied to a repo  
-- 🧠 It doesn’t track your thought process, just your code  
-- 📄 You can’t log ideas, questions, or side notes unrelated to a commit  
-
-**Devtrack is:**
-
-- 🧠 For your brain, not just your code  
-- 🛠️ Lightweight and always available  
-- 💬 Perfect for journaling, debugging, tracking blockers, and quick ideas  
-
----
-##  NPM Package
-
-https://www.npmjs.com/package/devtrack?activeTab=readme
 
 ## 🚀 Installation
 
 ```bash
 npm install -g @rupanjan123/devtrackcli
 ```
-## 🚀 A Real life Simulated Version of a Dev
+
+---
+
+## 🎓 Real-Life Simulated Developer Flow
+
 ```bash
-# 1. Switch context to your 'ChatbotApp' project
+# 1. Start by switching to a project
 dev switch-to ChatbotApp
 
-# 2. Log an initial idea for the chat functionality
-dev new "Thinking of using WebSockets for real-time chat; polling feels clunky." -t idea -a "Rupanjan"
+# 2. Log a new idea
+dev new "Using WebSockets for real-time chat instead of polling." -t idea
 
-# 3. Log a bug you're currently facing
-dev new "Chat lags when user types fast — maybe debounce input handlers?" -t bug -a "Rupanjan"
+# 3. Log a bug
+dev new "Chat lags when typing fast. Debounce input needed." -t bug
 
-# 4. Log a temporary note before taking a break
-dev new "Investigating message throttling strategy to stabilize UI." -t note -a "Rupanjan"
+# 4. Save a quick note
+dev new "Review message throttling strategy for smoother UI." -t note
 
-# 5. View your current project context
+# 5. View current context
 dev context
 
-# 6. Resume work the next day and recall your last thought
+# 6. Resume where you left off later
 dev resume
 
-# 7. Switch to a new project for a different task
+# 7. Switch project
 dev switch-to ExpenseTracker
 
-# 8. Log design decisions for the new project
-dev new "Choosing between localStorage or IndexedDB for offline sync." -t design -a "Rupanjan"
+# 8. Log design ideas
+dev new "Choosing between localStorage and IndexedDB." -t design
 
-# 9. Log tasks to plan your next sprint
-dev new "Need to build export-to-CSV feature. Targeting admin dashboard first." -t task -a "Rupanjan"
+# 9. Plan sprint
+dev new "Add export-to-CSV feature in admin dashboard." -t task
 
-# 10. Resume work on ExpenseTracker later
-dev resume
-
-# 11. Perform a fuzzy search across ALL your logs for "chat"
-dev search "chat"
-
-# 12. Search specifically within the 'ExpenseTracker' project and for entries tagged 'design'
-dev search --project ExpenseTracker --tags design
-
-# 13. View all logs associated with your current project context
+# 10. View all logs in current scope
 dev all
 
+# 11. Search all logs for anything related to chat
+dev search "chat" --scope all
+
+# 12. Filter by project & tag
+dev search --project ExpenseTracker --tags design
+
+# 13. View global logs
+dev all --scope global
+
+# 14. Clean logs if DB size is too big
+dev clean
 ```
-Let me know what you think! Your feedback would be invaluable.
 
+---
 
+## ℹ️ Why Not Just Git?
+
+Git is great for code, but:
+
+* ❌ Doesn't track what you're *thinking*
+* ❌ No support for personal logs unrelated to commits
+* ❌ No quick journal-like tracking across projects
+
+**Devtrack is:**
+
+* 🧠 Brain-first, not just code-first
+* 🛠️ Lightweight, always available
+* 📂 Structured, searchable, and scoped logging
+
+---
+
+## 🌐 NPM Package
+
+[https://www.npmjs.com/package/devtrack](https://www.npmjs.com/package/devtrack)
+
+---
+
+Let me know what you think – feedback or ideas to improve it are always welcome! ✨
+
+\#devtools #cli #nodejs #productivity #opensource #logging #developerworkflow
