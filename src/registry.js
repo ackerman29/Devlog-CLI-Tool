@@ -39,8 +39,23 @@ function getFolderByProject(projectName) {
     }
   }
 
+
   return null; // Not found
+}
+function getFolderProjectName(folderPath) {
+  const logsPath = path.join(folderPath, ".devtrack", "logs.json");
+  if (fs.existsSync(logsPath)) {
+    try {
+      const content = fs.readFileSync(logsPath, "utf-8");
+      const parsed = JSON.parse(content);
+      const firstLog = (parsed.logs || [])[0];
+      if (firstLog) {
+        return firstLog.project;
+      }
+    } catch (_) {}
+  }
+  return null;
 }
 
 
-module.exports = { registerFolder,getRegisteredFolders,getFolderByProject };
+module.exports = { registerFolder,getRegisteredFolders,getFolderByProject,getFolderProjectName };

@@ -5,17 +5,27 @@ const path = require("path");
 const fs = require("fs");
 const { getFolderByProject } = require("./registry"); 
 
+const { getContext } = require('./context.js');
 
 
 
 const insert = async (newLog, preferLocal = true) => {
   console.log(`Saving log with ID: ${newLog.id}`);
-  
-  await dbInsert(newLog,preferLocal);
+
+  await dbInsert(newLog, preferLocal);
+
   const db = await getDB({ preferLocal });
   console.log(`Total logs in DB (${preferLocal ? "local" : "global"}):${db.logs.length}`);
-};
 
+  // Ensure folder is tracked properly for local logs
+  if (preferLocal) {
+    const ctx = await getContext();
+    const currentProject = ctx.current;
+    if (currentProject) {
+      registerFolder(process.cwd());
+    }
+  }
+};
 const getAllLogs = async (scope = 'local') => {
   if (scope === "global") {
     const db = await getDB({ preferLocal: false });
@@ -113,28 +123,36 @@ const getAllLogs = async (scope = 'local') => {
 
 
 
-const newLog = async (entry, tags, author, project = "default", preferLocal = true) => {
+
+const newLog = async (entry, tags, author, project, preferLocal = true) => {
+  // Use folder name as default project if not explicitly passed
+  const folderProject = path.basename(process.cwd());
+  const finalProject = project || folderProject;
+
   const data = {
     tags,
     content: entry,
     author,
-    project,
+    project: finalProject,
     id: Date.now(),
   };
 
   await insert(data, preferLocal);
 
   if (preferLocal) {
-    const existingFolder = getFolderByProject(project);
+    const existingFolder = getFolderByProject(finalProject);
     if (!existingFolder) {
-      registerFolder(process.cwd()); // Only register if not found
+      registerFolder(process.cwd()); // Register folder only if not already
     }
   }
 
   await updateContext({ last_note: entry });
 
+  console.log(`ℹ️  Log saved under project: '${finalProject}'`);
+
   return data;
 };
+
 
 
  const searchLogs = async (query, options = {},scope='local') => {

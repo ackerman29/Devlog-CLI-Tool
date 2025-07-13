@@ -48,49 +48,85 @@ const listLogs = (logs) => {
 
 cli
   .command(
-    "new <log>",
-    "Create a new dev log entry",
-    (yargs) =>
-      yargs
-        .positional("log", {
-          describe: "The content of the log you want to save",
-          type: "string",
-        })
-        .option("author", {
-          alias: "a",
-          type: "string",
-          description: "Name of the author writing the log",
-        }),
-
-    async (argv) => {
-      const ctx = await getContext();
+  "new <log>",
+  "Create a new dev log entry",
+  yargs => yargs
+    .positional("log", {
+      describe: "The content of the log you want to save",
+      type: "string",
+    })
+    .option("author", {
+      alias: "a",
+      type: "string",
+      description: "Name of the author writing the log",
+    }),
+  async argv => {
     const path = require("path");
-    const currentProject = ctx.current || path.basename(process.cwd());
-      const tags = argv.tags ? argv.tags.split(",") : [];
-      const author = argv.author || "Anonymous";
-      const log = await newLog(argv.log, tags,author, currentProject, !argv.global);
-      console.log("Log saved successfully :)", log);
-    }
-  )
+    const { getContext } = require("./context");
+    const { getRegisteredFolders, getFolderByProject } = require("./registry");
+    const fs = require("fs");
 
-  .option("tags", {
-    alias: "t",
-    type: "string",
-    description: "Comma-separated tags for the log (e.g., idea,fix,random)",
-  })
-  
-  .example("dev new 'Setup done' -a Rupanjan --global", "Save log in global DB")
+    const cwd = process.cwd();
+    const folderName = path.basename(cwd);
+
+    const registeredFolders = getRegisteredFolders();
+
+    let project = folderName;
+
+    const folderIsRegistered = registeredFolders.includes(cwd);
+    const logsPath = path.join(cwd, ".devtrack", "logs.json");
+
+    if (folderIsRegistered && fs.existsSync(logsPath)) {
+      // If the folder is registered, try to fetch actual project name from the logs
+      const content = fs.readFileSync(logsPath, "utf-8");
+      const logs = JSON.parse(content).logs || [];
+      if (logs.length && logs[0].project) {
+        project = logs[0].project;
+      }
+    }
+
+    // 🔥 FOLDER WINS: No need to consider context at all
+    const tags = argv.tags ? argv.tags.split(",") : [];
+    const author = argv.author || "Anonymous";
+
+    const log = await newLog(argv.log, tags, author, project, !argv.global);
+    console.log(`ℹ️  Log saved under project: '${project}'`);
+    console.log("✅ Log saved successfully :)", log);
+  }
+)
+.option("tags", {
+  alias: "t",
+  type: "string",
+  description: "Comma-separated tags for the log (e.g., idea,fix,random)",
+})
+.example("dev new 'Setup complete' -a Rupanjan --global", "Save log in global DB")
+
+
 
     
   .command(
-    "all",
-    "View all log entries",
-    () => {},
-    async (argv) => {
-      const logs = await getAllLogs(argv.scope);
-      listLogs(logs);
+  "all",
+  "View all log entries",
+  () => {},
+  async (argv) => {
+    const logs = await getAllLogs(argv.scope);
+
+    // 🔍 Filter logs to match current project (for local scope only)
+    if (argv.scope === "local") {
+      const ctx = await getContext();
+      const currentProject = ctx.current;
+      if (currentProject) {
+        const filteredLogs = logs.filter(log => log.project === currentProject);
+        listLogs(filteredLogs);
+        return;
+      }
     }
-  )
+
+    // For global or all scope, just list everything
+    listLogs(logs);
+  }
+)
+
   .command(
     "find <id>",
     "Find a log entry by ID",
