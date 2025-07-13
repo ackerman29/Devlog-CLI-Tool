@@ -1,6 +1,8 @@
 const yargs = require("yargs");
 const { hideBin } = require("yargs/helpers");
 const { getFolderByProject, registerFolder } = require('./registry');
+const { getEffectiveProject } = require("./context");
+const { getRegisteredFolders } = require("./registry");
 
 
 const {
@@ -48,58 +50,53 @@ const listLogs = (logs) => {
 
 cli
   .command(
-  "new <log>",
-  "Create a new dev log entry",
-  yargs => yargs
-    .positional("log", {
-      describe: "The content of the log you want to save",
-      type: "string",
-    })
-    .option("author", {
-      alias: "a",
-      type: "string",
-      description: "Name of the author writing the log",
-    }),
-  async argv => {
-    const path = require("path");
-    const { getContext } = require("./context");
-    const { getRegisteredFolders, getFolderByProject } = require("./registry");
-    const fs = require("fs");
+    "new <log>",
+    "Create a new dev log entry",
+    yargs => yargs
+      .positional("log", {
+        describe: "The content of the log you want to save",
+        type: "string",
+      })
+      .option("author", {
+        alias: "a",
+        type: "string",
+        description: "Name of the author writing the log",
+      })
+      .option("tags", {
+        alias: "t",
+        type: "string",
+        description: "Comma-separated tags for the log (e.g., idea,fix,random)",
+      }),
+    async argv => {
+      const path = require("path");
+      const process = require("process");
+      const { getEffectiveProject } = require("./context");
+      const { getRegisteredFolders, registerFolder } = require("./registry");
 
-    const cwd = process.cwd();
-    const folderName = path.basename(cwd);
+      const cwd = path.resolve(process.cwd());
+      const registeredFolders = getRegisteredFolders();
 
-    const registeredFolders = getRegisteredFolders();
-
-    let project = folderName;
-
-    const folderIsRegistered = registeredFolders.includes(cwd);
-    const logsPath = path.join(cwd, ".devtrack", "logs.json");
-
-    if (folderIsRegistered && fs.existsSync(logsPath)) {
-      // If the folder is registered, try to fetch actual project name from the logs
-      const content = fs.readFileSync(logsPath, "utf-8");
-      const logs = JSON.parse(content).logs || [];
-      if (logs.length && logs[0].project) {
-        project = logs[0].project;
+      // ✅ Ensure folder gets registered if it's new
+      if (!registeredFolders.includes(cwd)) {
+        registerFolder(cwd);
       }
+
+      const project = await getEffectiveProject();
+
+      const tags = argv.tags
+        ? argv.tags.split(",").map(t => t.trim()).filter(Boolean)
+        : [];
+
+      const author = argv.author || "Anonymous";
+
+      const log = await newLog(argv.log, tags, author, project, !argv.global);
+
+      console.log(`ℹ️  Log saved under project: '${project}'`);
+      console.log("✅ Log saved successfully :)", log);
     }
+  )
 
-    // 🔥 FOLDER WINS: No need to consider context at all
-    const tags = argv.tags ? argv.tags.split(",") : [];
-    const author = argv.author || "Anonymous";
 
-    const log = await newLog(argv.log, tags, author, project, !argv.global);
-    console.log(`ℹ️  Log saved under project: '${project}'`);
-    console.log("✅ Log saved successfully :)", log);
-  }
-)
-.option("tags", {
-  alias: "t",
-  type: "string",
-  description: "Comma-separated tags for the log (e.g., idea,fix,random)",
-})
-.example("dev new 'Setup complete' -a Rupanjan --global", "Save log in global DB")
 
 
 
@@ -113,8 +110,8 @@ cli
 
     // 🔍 Filter logs to match current project (for local scope only)
     if (argv.scope === "local") {
-      const ctx = await getContext();
-      const currentProject = ctx.current;
+      const currentProject = await getEffectiveProject();
+
       if (currentProject) {
         const filteredLogs = logs.filter(log => log.project === currentProject);
         listLogs(filteredLogs);
@@ -126,6 +123,7 @@ cli
     listLogs(logs);
   }
 )
+
 
   .command(
     "find <id>",

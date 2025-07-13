@@ -4,6 +4,8 @@ const os = require("os");
 const { getFolderByProject, registerFolder } = require("./registry");
 const process = require("process");
 const CONTEXT_PATH = path.join(os.homedir(), ".devtrack", ".context.json");
+const { getRegisteredFolders } = require("./registry");
+
 
 async function ensureContextDir() {
   const dir = path.dirname(CONTEXT_PATH);
@@ -74,11 +76,42 @@ async function switchProject(projectName, lastNote = "") {
 
 
 
+async function getEffectiveProject() {
+  const cwd = path.resolve(process.cwd());
+  const folderName = path.basename(cwd);
+  const registeredFolders = getRegisteredFolders();
 
+  if (!registeredFolders.includes(cwd)) {
+    // 🆕 Unregistered folder → register it and clear context
+    registerFolder(cwd);
+    
+    const ctx = await getContext();
+    ctx.current = folderName; // Use folder name as project
+    ctx.projects[folderName] = {
+      last_note: "",
+      timestamp: Date.now(),
+    };
+    await writeContext(ctx);
+    
+    return folderName;
+  }
+
+  // 🟢 Registered folder → use context if switched, otherwise folder name
+  const ctx = await getContext();
+  
+  // If explicitly switched to a project, use it
+  if (ctx.current && ctx.current !== folderName) {
+    return ctx.current;
+  }
+  
+  // Otherwise use folder name
+  return folderName;
+}
 
 
 module.exports = {
   switchProject,
   updateContext,
+  getEffectiveProject,
   getContext,
 };
