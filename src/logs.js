@@ -148,7 +148,7 @@ const newLog = async (entry, tags, author, project, preferLocal = true) => {
 
   await updateContext({ last_note: entry });
 
-  console.log(`ℹ️  Log saved under project: '${finalProject}'`);
+  // console.log(`ℹ️  Log saved under project: '${finalProject}'`);
 
   return data;
 };
