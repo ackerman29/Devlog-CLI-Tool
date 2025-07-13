@@ -1,43 +1,111 @@
-const { getDB, saveDB, insert: dbInsert } = require("./db.js");
+const { getDB, saveDB, insert: dbInsert,getLogsByScope } = require("./db.js");
 const { updateContext } = require("./context.js");
+const { registerFolder, getRegisteredFolders } = require("./registry");
+const path = require("path");
+const fs = require("fs");
 
 
 
 
-const insert = async (newLog) => {
+const insert = async (newLog, preferLocal = true) => {
   console.log(`Saving log with ID: ${newLog.id}`);
   
-  await dbInsert(newLog);
-  const db = await getDB();
-  console.log(`Total logs in Db: ${db.logs.length}`);
+  await dbInsert(newLog,preferLocal);
+  const db = await getDB({ preferLocal });
+  console.log(`Total logs in DB (${preferLocal ? "local" : "global"}):${db.logs.length}`);
+};
+
+const getAllLogs = async (scope = 'local') => {
+  if (scope === "global") {
+    const db = await getDB({ preferLocal: false });
+    return db.logs || [];
+  }
+
+  if (scope === "local") {
+    const db = await getDB({ preferLocal: true });
+    return db.logs || [];
+  }
+
+  if (scope === "all") {
+    const logs = [];
+
+    // ✅ Global logs
+    try {
+      const globalDb = await getDB({ preferLocal: false });
+      logs.push(...(globalDb.logs || []));
+    } catch (_) {}
+
+    // ✅ All registered local folders
+    const folders = getRegisteredFolders().filter(Boolean); // filters out null, undefined, etc.
+
+    for (const folder of folders) {
+      if (typeof folder !== "string") continue;
+      const filePath = path.join(folder, ".devtrack", "logs.json");
+
+      try {
+        if (fs.existsSync(filePath)) {
+          const content = fs.readFileSync(filePath, "utf-8");
+          const parsed = JSON.parse(content);
+          logs.push(...(parsed.logs || []));
+        }
+      } catch (err) {
+        console.error(`❌ Failed to read logs from ${filePath}`, err.message);
+      }
+    }
+
+    return logs;
+  }
+};
+// const getAllLogs = async (scope = 'local') => {
+//   if (scope === "global") {
+//     return getLogsByScope(scope);
+//   }
+//   if (scope === "local") {
+//     return getDB(path.join(process.cwd(), LOCAL_DB_NAME));
+//   }
+
+//   if (scope === "all") {
+//     const logs = [];
+
+    // // Global logs
+    // logs.push(...(await readLogs(GLOBAL_DB_PATH)));
+
+    // // Local logs from registered folders
+    // const folders = getRegisteredFolders();
+    // for (const folder of folders) {
+    //   const localPath = path.join(folder, LOCAL_DB_NAME);
+    //   if (fs.existsSync(localPath)) {
+    //     logs.push(...(await readLogs(localPath)));
+    //   }
+    // }
+
+    // return logs;
+  
+
+
+
+
+ const findLog = async (id,scope='local') => {
+  const logs = await getLogsByScope(scope);
+  return logs.filter((log) => log.id === id);
 };
 
 
-const getAllLogs = async () => {
-  const db = await getDB();
-  return db.logs || [];
-};
- const findLog = async (id) => {
-  const db = await getDB();
-  return db.logs.filter((log) => log.id === id);
-};
-
-
- const deleteLog = async(id) => {
-  const db = await getDB();
+ const deleteLog = async(id,preferLocal=true) => {
+  const db = await getDB({preferLocal});
   const initialLength = db.logs.length;
   db.logs = db.logs.filter((log)=> log.id !== id);
-  await saveDB(db);
+  await saveDB(db,preferLocal);
   return db.logs.length < initialLength;
 };
 
- const deleteAllLogs = async () => {
-  const db = await getDB();
+ const deleteAllLogs = async (preferLocal=true) => {
+  const db = await getDB({preferLocal});
   db.logs = [];
-  await saveDB(db);
+  await saveDB(db,preferLocal);
 };
 
- const newLog = async (entry, tags, author, project="default") => {
+ const newLog = async (entry, tags, author, project="default",preferLocal=true) => {
   const data = {
     tags,
     content: entry,
@@ -45,15 +113,20 @@ const getAllLogs = async () => {
     project,  
     id: Date.now(),
   };
-  await insert(data);
+  await insert(data,preferLocal);
+  if (preferLocal) {
+    registerFolder(process.cwd());
+  }
   await updateContext({ last_note: entry }); 
   return data;
 };
 
- const searchLogs = async (query, options = {}) => {
-  const db = await getDB();
-  const logs = db.logs || [];
-  
+ const searchLogs = async (query, options = {},scope='local') => {
+  const logs = await getAllLogs(scope);
+    console.log("🔍 Logs available for search:", logs.length);
+    console.log(`🔍 Scope: ${scope}`);
+console.log(`🔍 Total logs found from getAllLogs: ${logs.length}`);
+console.log(logs.map(log => log.project));
   if (!query && !options.project && !options.author && !options.tags) {
     return logs; 
   }
@@ -94,15 +167,17 @@ const getAllLogs = async () => {
   });
   
   if (query) {
-    results.sort((a, b) => {
-      const aScore = getRelevanceScore(a, query);
-      const bScore = getRelevanceScore(b, query);
-      return bScore - aScore;
-    });
-  }
+        results.sort((a, b) => getRelevanceScore(b, query) - getRelevanceScore(a, query));
+
+    };
+  
   
   return results;
 };
+
+
+
+
 const getRelevanceScore = (log, query) => {
   const searchQuery = query.toLowerCase();
   const content = log.content.toLowerCase();
@@ -130,6 +205,9 @@ const getRelevanceScore = (log, query) => {
   return score;
 };
 
+
+
+//print the search results in a user-friendly format
  const listSearchResults = (logs, query, options = {}) => {
   if (logs.length === 0) {
     console.log("No logs found matching your search criteria.");

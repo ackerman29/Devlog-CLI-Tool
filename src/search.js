@@ -7,7 +7,8 @@ const chalk = require("chalk");
   try {
     const start = process.hrtime();
     
-    const allLogs = await getAllLogs();
+    const allLogs = await getAllLogs(options.scope || "local"); 
+
     
     let filteredLogs = allLogs.filter(log => {
       const matchesProject = !options.project || log.project === options.project;
@@ -36,7 +37,7 @@ const chalk = require("chalk");
       threshold: 0.4, // 0.0 = exact match, 1.0 = match anything
       includeScore: true,
       includeMatches: true,
-      minMatchCharLength: 2,
+      minMatchCharLength: 1,
       ignoreLocation: true, 
       findAllMatches: true
     };

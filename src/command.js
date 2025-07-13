@@ -13,6 +13,23 @@ const { switchProject, getContext, updateContext } = require("./context.js");
 
 const { searchLogs, listSearchResults } = require("./search.js");
 
+const cli = yargs(hideBin(process.argv))
+  .option("global", {
+    type: "boolean",
+    default: false,
+    description: "Use global database instead of local",
+  })
+  .option("scope", {
+    choices: ["local", "global", "all"],
+    description: "Scope to fetch logs from (for search/all/find)",
+    default: "local",
+  })
+  .option("tags", {
+    alias: "t",
+    type: "string",
+    description: "Comma-separated tags for the log (e.g., idea,fix,random)",
+  });
+
 
 const listLogs = (logs) => {
   logs.forEach((log) => {
@@ -27,7 +44,7 @@ const listLogs = (logs) => {
 };
 
 
-yargs(hideBin(process.argv))
+cli
   .command(
     "new <log>",
     "Create a new dev log entry",
@@ -41,14 +58,15 @@ yargs(hideBin(process.argv))
           alias: "a",
           type: "string",
           description: "Name of the author writing the log",
-          demandOption: true,
         }),
+
     async (argv) => {
       const ctx = await getContext();
-      const currentProject = ctx.current || "default";
+    const path = require("path");
+    const currentProject = ctx.current || path.basename(process.cwd());
       const tags = argv.tags ? argv.tags.split(",") : [];
-
-      const log = await newLog(argv.log, tags, argv.author, currentProject);
+      const author = argv.author || "Anonymous";
+      const log = await newLog(argv.log, tags,author, currentProject, !argv.global);
       console.log("Log saved successfully :)", log);
     }
   )
@@ -59,14 +77,15 @@ yargs(hideBin(process.argv))
     description: "Comma-separated tags for the log (e.g., idea,fix,random)",
   })
   
-    
+  .example("dev new 'Setup done' -a Rupanjan --global", "Save log in global DB")
+
     
   .command(
     "all",
     "View all log entries",
     () => {},
-    async () => {
-      const logs = await getAllLogs();
+    async (argv) => {
+      const logs = await getAllLogs(argv.scope);
       listLogs(logs);
     }
   )
@@ -79,7 +98,7 @@ yargs(hideBin(process.argv))
         type: "number",
       }),
     async (argv) => {
-      const log = await findLog(argv.id);
+    const log = await findLog(argv.id, argv.scope);
       listLogs(log);
     }
   )
@@ -92,7 +111,7 @@ yargs(hideBin(process.argv))
         type: "number",
       }),
     async (argv) => {
-      const deleted = await deleteLog(argv.id);
+    const deleted = await deleteLog(argv.id, !argv.global);
       console.log(deleted ? " Log deleted." : " Log not found.");
     }
   )
@@ -100,8 +119,8 @@ yargs(hideBin(process.argv))
     "clean",
     "Delete all logs",
     () => {},
-    async () => {
-      await deleteAllLogs();
+    async (argv) => {
+    await deleteAllLogs(!argv.global);
       console.log("🧹 All logs cleared.");
     }
   )
@@ -128,7 +147,7 @@ yargs(hideBin(process.argv))
     "context",
     "Show current project context",
     () => {},
-    async () => {
+    async (argv) => {
       const ctx = await getContext();
       if (!ctx.current) {
         console.log("No active project. Use `dev switch-to <project>`");
@@ -158,7 +177,7 @@ yargs(hideBin(process.argv))
     "resume",
     "Resume work on the current project",
     () => {},
-    async () => {
+    async (argv) => {
       const ctx = await getContext();
       if (!ctx.current) {
         console.log("No active project. Use `dev switch-to <project>` first.");
@@ -242,6 +261,8 @@ yargs(hideBin(process.argv))
       .example("dev search 'bug fix'", "Fuzzy search for logs containing 'bug fix'")
       .example("dev search --project myapp", "Show all logs from 'myapp' project")
       .example("dev search api --exact", "Exact search for 'api'")
+      .example("dev search --scope all", "Search both local and global logs")
+
       .example("dev search 'algoritm' --threshold 0.2", "Strict fuzzy search (finds 'algorithm')"),
   async (argv) => {
     try {
@@ -253,9 +274,11 @@ yargs(hideBin(process.argv))
         before: argv.before,
         exact: argv.exact,
         threshold: argv.threshold,
+        scope: argv.scope 
+
       };
       
-      const results = await searchLogs(argv.query, searchOptions);
+      const results = await searchLogs(argv.query, searchOptions, argv.scope);
       
       // Apply limit
       const limitedResults = argv.limit ? results.slice(0, argv.limit) : results;
@@ -263,13 +286,14 @@ yargs(hideBin(process.argv))
       listSearchResults(limitedResults, argv.query, searchOptions);
       
       if (results.length > argv.limit) {
-        console.log(`\n💡 Showing first ${argv.limit} results. Use --limit to see more.`);
+        console.log(`\n Showing first ${argv.limit} results. Use --limit to see more.`);
       }
     } catch (error) {
-      console.error("❌ Search failed:", error.message);
+      console.error("Search failed:", error.message);
     }
   }
 )
 
-  .demandCommand(1)
-  .parse();
+
+
+cli.demandCommand(1).parse();
