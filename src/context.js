@@ -17,17 +17,23 @@ async function ensureContextDir() {
 }
 
 
-async function readContext(){
-    await ensureContextDir();
-
+async function readContext() {
+  await ensureContextDir();
   try {
     const data = await fs.readFile(CONTEXT_PATH, "utf-8");
-
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    return {
+      current: null,
+      projects: {},
+      lastFolder: null,
+      ...parsed,  // safely merge with existing context
+    };
   } catch {
-    return { current: null, projects:{} };
+    return { current: null, projects: {}, lastFolder: null };
   }
 }
+
+
 async function writeContext(data){
     await ensureContextDir();
   await fs.writeFile(CONTEXT_PATH, JSON.stringify(data, null, 2));
@@ -56,19 +62,23 @@ async function getContext() {
   return await readContext();
 
 }
+
+
 async function switchProject(projectName, lastNote = "") {
   const ctx = await readContext();
+  const cwd = path.resolve(process.cwd());
   ctx.current = projectName;
+  ctx.lastFolder = cwd;
+  ctx.manual = true;  // ✅ mark as manual switch
 
   const folder = getFolderByProject(projectName);
   if (!folder) {
-    // New project → register current folder
-    registerFolder(process.cwd());
+    registerFolder(cwd);
   }
 
   ctx.projects[projectName] = {
     last_note: lastNote,
-    timestamp: Date.now(), 
+    timestamp: Date.now(),
   };
   await writeContext(ctx);
   return ctx;
@@ -76,37 +86,46 @@ async function switchProject(projectName, lastNote = "") {
 
 
 
+
 async function getEffectiveProject() {
   const cwd = path.resolve(process.cwd());
   const folderName = path.basename(cwd);
   const registeredFolders = getRegisteredFolders();
+  const ctx = await getContext();
 
   if (!registeredFolders.includes(cwd)) {
-    // 🆕 Unregistered folder → register it and clear context
     registerFolder(cwd);
-    
-    const ctx = await getContext();
-    ctx.current = folderName; // Use folder name as project
-    ctx.projects[folderName] = {
-      last_note: "",
-      timestamp: Date.now(),
-    };
-    await writeContext(ctx);
-    
-    return folderName;
+
+    // 👇 Unregistered → treat as folder-based unless already switched manually
+    if (!ctx.manual) {
+      ctx.current = folderName;
+      ctx.manual = false;
+      ctx.lastFolder = cwd;
+      ctx.projects[folderName] = {
+        last_note: "",
+        timestamp: Date.now(),
+      };
+      await writeContext(ctx);
+    }
+    return ctx.current || folderName;
   }
 
-  // 🟢 Registered folder → use context if switched, otherwise folder name
-  const ctx = await getContext();
-  
-  // If explicitly switched to a project, use it
-  if (ctx.current && ctx.current !== folderName) {
-    return ctx.current;
+  // 🧠 If folder has changed
+  if (ctx.lastFolder !== cwd) {
+    if (!ctx.manual) {
+      // Previous context was folder-based → update to new folder
+      ctx.current = folderName;
+    }
+    ctx.manual = false;        // Reset back to folder-based
+    ctx.lastFolder = cwd;
+    await writeContext(ctx);
   }
-  
-  // Otherwise use folder name
-  return folderName;
+
+  return ctx.current || folderName;
 }
+
+
+
 
 
 module.exports = {
