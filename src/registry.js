@@ -9,7 +9,10 @@ function ensureRegistryExists() {
     fs.writeFileSync(REGISTRY_PATH, JSON.stringify([]));
   }
 }
-
+function getRegisteredFolders() {
+  ensureRegistryExists();
+  return JSON.parse(fs.readFileSync(REGISTRY_PATH, "utf-8"));
+}
 function registerFolder(folderPath) {
   ensureRegistryExists();
   const data = JSON.parse(fs.readFileSync(REGISTRY_PATH, "utf-8"));
@@ -19,9 +22,25 @@ function registerFolder(folderPath) {
   }
 }
 
-function getRegisteredFolders() {
+function getFolderByProject(projectName) {
   ensureRegistryExists();
-  return JSON.parse(fs.readFileSync(REGISTRY_PATH, "utf-8"));
+  const folders = JSON.parse(fs.readFileSync(REGISTRY_PATH, "utf-8"));
+
+  for (const folder of folders) {
+    const logsPath = path.join(folder, ".devtrack", "logs.json");
+    if (fs.existsSync(logsPath)) {
+      try {
+        const content = fs.readFileSync(logsPath, "utf-8");
+        const parsed = JSON.parse(content);
+        if ((parsed.logs || []).some(log => log.project === projectName)) {
+          return folder;
+        }
+      } catch (_) {}
+    }
+  }
+
+  return null; // Not found
 }
 
-module.exports = { registerFolder, getRegisteredFolders };
+
+module.exports = { registerFolder,getRegisteredFolders,getFolderByProject };

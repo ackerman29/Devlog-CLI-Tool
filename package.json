@@ -1,6 +1,6 @@
 {
   "name": "@rupanjan123/devtrackcli",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A CLI tool to track your developer logs and thoughts.",
   "main": "index.js",
   "bin": {

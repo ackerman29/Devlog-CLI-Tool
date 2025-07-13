@@ -3,6 +3,7 @@ const { updateContext } = require("./context.js");
 const { registerFolder, getRegisteredFolders } = require("./registry");
 const path = require("path");
 const fs = require("fs");
+const { getFolderByProject } = require("./registry"); 
 
 
 
@@ -105,21 +106,36 @@ const getAllLogs = async (scope = 'local') => {
   await saveDB(db,preferLocal);
 };
 
- const newLog = async (entry, tags, author, project="default",preferLocal=true) => {
+
+
+
+
+
+
+
+const newLog = async (entry, tags, author, project = "default", preferLocal = true) => {
   const data = {
     tags,
     content: entry,
     author,
-    project,  
+    project,
     id: Date.now(),
   };
-  await insert(data,preferLocal);
+
+  await insert(data, preferLocal);
+
   if (preferLocal) {
-    registerFolder(process.cwd());
+    const existingFolder = getFolderByProject(project);
+    if (!existingFolder) {
+      registerFolder(process.cwd()); // Only register if not found
+    }
   }
-  await updateContext({ last_note: entry }); 
+
+  await updateContext({ last_note: entry });
+
   return data;
 };
+
 
  const searchLogs = async (query, options = {},scope='local') => {
   const logs = await getAllLogs(scope);

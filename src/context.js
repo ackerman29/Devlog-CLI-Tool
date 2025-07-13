@@ -1,7 +1,8 @@
 const fs = require("fs").promises;
 const path = require("path");
 const os = require("os");
-
+const { getFolderByProject, registerFolder } = require("./registry");
+const process = require("process");
 const CONTEXT_PATH = path.join(os.homedir(), ".devtrack", ".context.json");
 
 async function ensureContextDir() {
@@ -56,6 +57,13 @@ async function getContext() {
 async function switchProject(projectName, lastNote = "") {
   const ctx = await readContext();
   ctx.current = projectName;
+
+  const folder = getFolderByProject(projectName);
+  if (!folder) {
+    // New project → register current folder
+    registerFolder(process.cwd());
+  }
+
   ctx.projects[projectName] = {
     last_note: lastNote,
     timestamp: Date.now(), 
@@ -63,6 +71,7 @@ async function switchProject(projectName, lastNote = "") {
   await writeContext(ctx);
   return ctx;
 }
+
 
 
 

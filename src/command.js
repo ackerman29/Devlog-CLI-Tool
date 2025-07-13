@@ -1,5 +1,7 @@
 const yargs = require("yargs");
 const { hideBin } = require("yargs/helpers");
+const { getFolderByProject, registerFolder } = require('./registry');
+
 
 const {
   newLog,
@@ -125,24 +127,29 @@ cli
     }
   )
   .command(
-    "switch-to <project>",
-    "Switch to a different project / create a new one",
-    yargs => yargs
-    .positional("project", {
+  "switch-to <project>",
+  "Switch to a different project / create a new one",
+  (yargs) => {
+    return yargs.positional("project", {
       describe: "Project name to switch to",
-      type: "string"
-    }),
-    async argv => {
-      const logs = await getAllLogs();
+      type: "string",
+    });
+  },
+  async (argv) => {
+    const existingFolder = getFolderByProject(argv.project);
 
-      // Filter logs from this specific project
-      const projectLogs = logs.filter(log => log.project === argv.project);
-      const latestLog = projectLogs.length ? projectLogs[projectLogs.length - 1].content : "";
-
-      await switchProject(argv.project, latestLog);
-      console.log(`Switched to "${argv.project}"`);
+    if (existingFolder) {
+      process.chdir(existingFolder); // Switch to existing folder
+      await switchProject(argv.project);
+      console.log(`✅ Switched to existing project '${argv.project}' at ${existingFolder}`);
+    } else {
+      await switchProject(argv.project);
+      registerFolder(process.cwd());
+      console.log(`🆕 Created new project '${argv.project}' and registered current folder`);
     }
-  )
+  }
+)
+
   .command(
     "context",
     "Show current project context",
