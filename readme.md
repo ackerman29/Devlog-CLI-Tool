@@ -20,7 +20,57 @@ Think of it as **"committing your thoughts," not just your code.**
 
 ## ✨ What's New & Improved?
 
-### 🌐 Global & Local Databases
+### 🔎 Smarter Folder-Based Context (Default Behavior)
+
+* Logs now default to the **current folder name** as the project
+* If you `dev switch-to <project>`, logs go to that project **until you change folders**
+* Moving to a different folder resets the project context automatically
+* No global sticky context — just intuitive folder-based tracking
+
+### 🧠 How Devtrack Context Works
+
+#### 📁 1. Folder-Based Logging (Default)
+
+Devtrack automatically logs your entries under the **folder name** you're currently in.
+
+```bash
+cd ~/projects/ChatbotApp
+dev new "Improve authentication strategy"
+```
+
+➡️ This will be logged under `ChatbotApp`.
+
+#### 🔀 2. Switch Context Temporarily
+
+Use this when you want to log under a different project without changing folders:
+
+```bash
+dev switch-to backend
+```
+
+➡️ Logs will now go under `backend` until you change folders.
+
+#### 🚶 3. Folder Change = Context Reset
+
+As soon as you `cd` into a different folder, Devtrack **resets the context** back to the folder name:
+
+```bash
+cd ../ExpenseTracker
+```
+
+➡️ Logs will now go under `ExpenseTracker` (not `backend` anymore).
+
+#### 🧪 Summary Table
+
+| Scenario                        | Where logs go     |
+| ------------------------------- | ----------------- |
+| Inside a folder (no switch)     | Folder name       |
+| After `dev switch-to <project>` | Switched project  |
+| After folder change             | Folder name again |
+
+---
+
+### ✨ Global & Local Databases
 
 * Store logs **locally** inside project folders or **globally** for cross-project memory
 * Use `--global` flag or `--scope` to switch views and searches
@@ -31,16 +81,17 @@ Think of it as **"committing your thoughts," not just your code.**
 * Smart filters: search by project, author, tags, or date range
 * Search even with **numerics and special characters** now
 
-### 🎨 Smart Tagging & Context
+### 🎨 Smart Tagging & Auto Context
 
 * Tag logs as per your choice: `bug`, `task`, `design`, `note`, `idea`, etc.
-* Auto-registers your project when logging from a new folder
-* Seamless `context` & `resume` flow to avoid context-switch fatigue
+* Auto-registers your folder as a project when logging for the first time
+* Switches context automatically when moving to a new folder
 
 ### ➕ New Commands
 
-* `dev switch-to <project>` – switch context manually
-* `dev resume` – return to your last working context
+* `dev switch-to <project>` – switch context manually (local to current folder)
+* `dev resume` – return to your last working context in that folder
+* `dev context` – view current effective project
 * `dev all` – view logs from `local`, `global`, or `all` scopes
 * `dev search` – fuzzy or exact search with `--scope`, `--tags`, `--author`, etc.
 * `dev clean` – clean logs if database reaches a certain size threshold
@@ -55,11 +106,11 @@ npm install -g @rupanjan123/devtrackcli
 
 ---
 
-## 🎓 Real-Life Simulated Developer Flow
+## 🎓 Real-Life Developer Flow
 
 ```bash
-# 1. Start by switching to a project
-dev switch-to ChatbotApp
+# 1. Start in a folder (default project = folder name)
+cd ~/projects/ChatbotApp
 
 # 2. Log a new idea
 dev new "Using WebSockets for real-time chat instead of polling." -t idea
@@ -70,34 +121,35 @@ dev new "Chat lags when typing fast. Debounce input needed." -t bug
 # 4. Save a quick note
 dev new "Review message throttling strategy for smoother UI." -t note
 
-# 5. View current context
-dev context
+# 5. Switch to a project temporarily
+dev switch-to backend
 
-# 6. Resume where you left off later
-dev resume
+dev new "Add Redis pub-sub for horizontal scaling." -t design
 
-# 7. Switch project
-dev switch-to ExpenseTracker
+# 6. Change folder (context resets)
+cd ../ExpenseTracker
 
-# 8. Log design ideas
 dev new "Choosing between localStorage and IndexedDB." -t design
 
-# 9. Plan sprint
+# 7. Plan sprint
 dev new "Add export-to-CSV feature in admin dashboard." -t task
 
-# 10. View all logs in current scope
+# 8. View all logs
 dev all
 
-# 11. Search all logs for anything related to chat
+# 9. Search all logs
 dev search "chat" --scope all
 
-# 12. Filter by project & tag
+# 10. Filter by project & tag
 dev search --project ExpenseTracker --tags design
 
-# 13. View global logs
+# 11. View current project context
+dev context
+
+# 12. View global logs
 dev all --scope global
 
-# 14. Clean logs if DB size is too big
+# 13. Clean logs
 dev clean
 ```
 
