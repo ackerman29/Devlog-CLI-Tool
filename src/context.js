@@ -1,21 +1,21 @@
 const fs = require("fs").promises;
 const path = require("path");
 const os = require("os");
-const { getFolderByProject, registerFolder } = require("./registry");
 const process = require("process");
-const CONTEXT_PATH = path.join(os.homedir(), ".devtrack", ".context.json");
-const { getRegisteredFolders } = require("./registry");
 
+const {
+  getFolderByProject,
+  getProjectByFolder,
+  registerProject,
+  getAllRegisteredProjects,
+} = require("./registry");
+
+const CONTEXT_PATH = path.join(os.homedir(), ".devtrack", ".context.json");
 
 async function ensureContextDir() {
   const dir = path.dirname(CONTEXT_PATH);
-  try {
-    await fs.mkdir(dir, { recursive: true });
-  } catch (err) {
-    if (err.code !== "EEXIST") throw err;
-  }
+  await fs.mkdir(dir, { recursive: true });
 }
-
 
 async function readContext() {
   await ensureContextDir();
@@ -26,104 +26,103 @@ async function readContext() {
       current: null,
       projects: {},
       lastFolder: null,
-      ...parsed,  // safely merge with existing context
+      manual: false,
+      ...parsed,
     };
   } catch {
-    return { current: null, projects: {}, lastFolder: null };
+    return { current: null, projects: {}, lastFolder: null, manual: false };
   }
 }
 
-
-async function writeContext(data){
-    await ensureContextDir();
+async function writeContext(data) {
+  await ensureContextDir();
   await fs.writeFile(CONTEXT_PATH, JSON.stringify(data, null, 2));
 }
-// async function getCurrentTask() {
-//   const ctx = await readContext();
-//   if (!ctx.current || !ctx.projects[ctx.current]) {
-//     return null;
-//   }
-//   return ctx.projects[ctx.current].current_task || "No active task";
-// }
+
 async function updateContext(updates) {
   const ctx = await readContext();
   const project = ctx.current;
   if (!project) return;
-  const currentData = ctx.projects[project]|| {};
+  const currentData = ctx.projects[project] || {};
   ctx.projects[project] = {
-  ...currentData,
-  ...updates,
-  timestamp: Date.now(),
-};
-await writeContext(ctx);
-
+    ...currentData,
+    ...updates,
+    timestamp: Date.now(),
+  };
+  await writeContext(ctx);
 }
+
 async function getContext() {
   return await readContext();
-
 }
-
 
 async function switchProject(projectName, lastNote = "") {
   const ctx = await readContext();
   const cwd = path.resolve(process.cwd());
-  ctx.current = projectName;
-  ctx.lastFolder = cwd;
-  ctx.manual = true;  // ✅ mark as manual switch
 
-  const folder = getFolderByProject(projectName);
-  if (!folder) {
-    registerFolder(cwd);
+  ctx.current = projectName;
+  ctx.manual = true;
+  ctx.lastFolder = cwd;
+
+  const existingFolder = getFolderByProject(projectName);
+
+  // ✅ Register project only if it's not already registered
+  if (!existingFolder) {
+    registerProject(projectName, cwd);
   }
 
   ctx.projects[projectName] = {
     last_note: lastNote,
     timestamp: Date.now(),
   };
+
   await writeContext(ctx);
   return ctx;
 }
 
-
-
-
 async function getEffectiveProject() {
-  const cwd = path.resolve(process.cwd());
+  const cwd = process.cwd();
   const folderName = path.basename(cwd);
-  const registeredFolders = getRegisteredFolders();
   const ctx = await getContext();
+  const knownProject = getProjectByFolder(cwd);
+  const isDifferentFolder = cwd !== ctx.lastFolder;
 
-  if (!registeredFolders.includes(cwd)) {
-    registerFolder(cwd);
+  console.log(`📂 Current folder: ${cwd}`);
+  console.log(`📦 Folder name: ${folderName}`);
+  console.log(`📘 Known project for this folder: ${knownProject}`);
+  console.log("🧠 Context before processing:", ctx);
 
-    // 👇 Unregistered → treat as folder-based unless already switched manually
-    if (!ctx.manual) {
-      ctx.current = folderName;
+  if (ctx.manual) {
+    if (!knownProject) {
+      // Unknown folder -> disable manual mode
+      console.log("❓ Folder not registered — turning off manual mode and using folder-based switch");
       ctx.manual = false;
+    } else {
+      // Still in known/registered project — stay in manually selected project
+      console.log("🔒 Manual mode ON & folder known — staying in:", ctx.current);
       ctx.lastFolder = cwd;
-      ctx.projects[folderName] = {
-        last_note: "",
-        timestamp: Date.now(),
-      };
       await writeContext(ctx);
+      return ctx.current;
     }
-    return ctx.current || folderName;
   }
 
-  // 🧠 If folder has changed
-  if (ctx.lastFolder !== cwd) {
-    if (!ctx.manual) {
-      // Previous context was folder-based → update to new folder
-      ctx.current = folderName;
-    }
-    ctx.manual = false;        // Reset back to folder-based
-    ctx.lastFolder = cwd;
-    await writeContext(ctx);
+  // At this point, manual is either false or just turned off
+  let currentProject = knownProject;
+
+  if (!currentProject) {
+    // Register the project if unknown
+    registerProject(folderName, cwd);
+    currentProject = folderName;
+    console.log(`🆕 Registered new project: ${folderName} -> ${cwd}`);
+  } else {
+    console.log(`✅ Match found: ${currentProject}`);
   }
 
-  return ctx.current || folderName;
+  ctx.current = currentProject;
+  ctx.lastFolder = cwd;
+  await writeContext(ctx);
+  return currentProject;
 }
-
 
 
 

@@ -1,6 +1,14 @@
 # Devtrack CLI Tool 🛠️
 
 ---
+## 🚀 Installation
+
+```bash
+npm install -g @rupanjan123/devtrackcli
+```
+⚠️ Do not install locally (without -g) — the dev command will not be available in your terminal.
+
+---
 
 ## 🧐 Ever feel lost coming back to a project after a few days?
 
@@ -98,13 +106,7 @@ cd ../ExpenseTracker
 
 ---
 
-## 🚀 Installation
 
-```bash
-npm install -g @rupanjan123/devtrackcli
-```
-
----
 
 ## 🎓 Real-Life Developer Flow
 

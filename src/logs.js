@@ -1,6 +1,6 @@
 const { getDB, saveDB, insert: dbInsert,getLogsByScope } = require("./db.js");
 const { updateContext } = require("./context.js");
-const { registerFolder, getRegisteredFolders } = require("./registry");
+const {getRegisteredFolders, registerProject } = require("./registry");
 const path = require("path");
 const fs = require("fs");
 const { getFolderByProject } = require("./registry"); 
@@ -22,7 +22,7 @@ const insert = async (newLog, preferLocal = true) => {
     const ctx = await getContext();
     const currentProject = ctx.current;
     if (currentProject) {
-      registerFolder(process.cwd());
+      registerProject(currentProject,process.cwd());
     }
   }
 };
@@ -125,9 +125,12 @@ const getAllLogs = async (scope = 'local') => {
 
 
 const newLog = async (entry, tags, author, project, preferLocal = true) => {
-  // Use folder name as default project if not explicitly passed
-  const folderProject = path.basename(process.cwd());
-  const finalProject = project || folderProject;
+  let finalProject = project;
+
+  if (!finalProject) {
+    const ctx = await getContext();
+    finalProject = ctx.current || path.basename(process.cwd());
+  }
 
   const data = {
     tags,
@@ -142,17 +145,14 @@ const newLog = async (entry, tags, author, project, preferLocal = true) => {
   if (preferLocal) {
     const existingFolder = getFolderByProject(finalProject);
     if (!existingFolder) {
-      registerFolder(process.cwd()); // Register folder only if not already
+      registerProject(finalProject, process.cwd());
     }
   }
 
   await updateContext({ last_note: entry });
 
-  // console.log(`ℹ️  Log saved under project: '${finalProject}'`);
-
   return data;
 };
-
 
 
  const searchLogs = async (query, options = {},scope='local') => {

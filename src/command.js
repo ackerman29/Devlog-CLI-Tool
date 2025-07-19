@@ -50,9 +50,10 @@ const listLogs = (logs) => {
 
 cli
   .command(
-    "new <log>",
-    "Create a new dev log entry",
-    yargs => yargs
+  "new <log>",
+  "Create a new dev log entry",
+  (yargs) => {
+    return yargs
       .positional("log", {
         describe: "The content of the log you want to save",
         type: "string",
@@ -65,36 +66,36 @@ cli
       .option("tags", {
         alias: "t",
         type: "string",
-        description: "Comma-separated tags for the log (e.g., idea,fix,random)",
-      }),
-    async argv => {
-      const path = require("path");
-      const process = require("process");
-      const { getEffectiveProject } = require("./context");
-      const { getRegisteredFolders, registerFolder } = require("./registry");
+        description: "Comma-separated tags (e.g., idea,fix)",
+      });
+  },
+  async (argv) => {
+    const path = require("path");
+    const process = require("process");
+    const { getEffectiveProject } = require("./context");
+    const { registerProject, getProjectByFolder } = require("./registry");
+    const { newLog } = require("./logs");
 
-      const cwd = path.resolve(process.cwd());
-      const registeredFolders = getRegisteredFolders();
+    const cwd = path.resolve(process.cwd());
+    const project = await getEffectiveProject();
 
-      // ✅ Ensure folder gets registered if it's new
-      if (!registeredFolders.includes(cwd)) {
-        registerFolder(cwd);
-      }
-
-      const project = await getEffectiveProject();
-
-      const tags = argv.tags
-        ? argv.tags.split(",").map(t => t.trim()).filter(Boolean)
-        : [];
-
-      const author = argv.author || "Anonymous";
-
-      const log = await newLog(argv.log, tags, author, project, !argv.global);
-
-      console.log(`ℹ️  Log saved under project: '${project}'`);
-      console.log("✅ Log saved successfully :)", log);
+    // Ensure folder is registered to project
+    if (!getProjectByFolder(cwd)) {
+      registerProject(project, cwd); // register fallback (folder-named) project
     }
-  )
+
+    const tags = argv.tags
+      ? argv.tags.split(",").map((t) => t.trim()).filter(Boolean)
+      : [];
+
+    const author = argv.author || "Anonymous";
+    const log = await newLog(argv.log, tags, author, project, !argv.global);
+
+    console.log(`ℹ️  Log saved under project: '${project}'`);
+    console.log("✅ Log saved successfully :)", log);
+  }
+)
+
 
 
 
@@ -170,19 +171,28 @@ cli
     });
   },
   async (argv) => {
-    const existingFolder = getFolderByProject(argv.project);
+    // const path = require("path");
+    // const process = require("process");
+    // const { getFolderByProject, registerProject } = require("./registry");
+    // const { switchProject } = require("./context");
+
+    const project = argv.project;
+    const existingFolder = getFolderByProject(project);
 
     if (existingFolder) {
-      process.chdir(existingFolder); // Switch to existing folder
-      await switchProject(argv.project);
-      console.log(`✅ Switched to existing project '${argv.project}' at ${existingFolder}`);
+      // Force move into that folder for logging consistency
+      process.chdir(existingFolder);
+      await switchProject(project);
+      console.log(`✅ Switched to existing project '${project}' at ${existingFolder}`);
     } else {
-      await switchProject(argv.project);
-      registerFolder(process.cwd());
-      console.log(`🆕 Created new project '${argv.project}' and registered current folder`);
+      const cwd = path.resolve(process.cwd());
+      registerProject(project, cwd);
+      await switchProject(project);
+      console.log(`🆕 Created and switched to new project '${project}' in current folder`);
     }
   }
 )
+
 
   .command(
     "context",
@@ -215,36 +225,40 @@ cli
     }
   )
   .command(
-    "resume",
-    "Resume work on the current project",
-    () => {},
-    async (argv) => {
-      const ctx = await getContext();
-      if (!ctx.current) {
-        console.log("No active project. Use `dev switch-to <project>` first.");
-        return;
-      }
-      
-      const proj = ctx.projects[ctx.current];
-      const logs = await getAllLogs();
-      const projectLogs = logs.filter(log => log.project === ctx.current);
-      
-      console.log(` Welcome back to ${ctx.current}`);
-
-      console.log(`You were working on: "${proj.last_note|| "No notes"}"`);
-      
-      if (projectLogs.length > 0) {
-        console.log(`\n Your recent work:`);
-        const recent = projectLogs.slice(-5);
-        recent.forEach((log, i)=> 
-          {
-          const timeAgo = Math.round((Date.now() - log.id)/(60000));
-          console.log(`  ${i + 1}. "${log.content}" (${timeAgo}m ago)`);
-        });
-      }
-      console.log("Let's continue!");
+  "resume",
+  "Resume work on the current project",
+  () => {},
+  async (argv) => {
+    const ctx = await getContext();
+    if (!ctx.current) {
+      console.log("No active project. Use `dev switch-to <project>` first.");
+      return;
     }
-  )
+
+    const proj = ctx.projects[ctx.current];
+
+    // ✅ Force switch back to context’s project
+    await registerProject(ctx.current);
+    await switchProject(ctx.current, proj.last_note || "");
+
+    const logs = await getAllLogs();
+    const projectLogs = logs.filter(log => log.project === ctx.current);
+
+    console.log(`✅ Reverted to project: ${ctx.current}`);
+    console.log(`You were working on: "${proj.last_note || "No notes"}"`);
+
+    if (projectLogs.length > 0) {
+      console.log(`\nYour recent work:`);
+      const recent = projectLogs.slice(-5);
+      recent.forEach((log, i) => {
+        const timeAgo = Math.round((Date.now() - log.id) / 60000);
+        console.log(`  ${i + 1}. "${log.content}" (${timeAgo}m ago)`);
+      });
+    }
+
+    console.log("Let's continue!");
+  }
+)
 
 
 
