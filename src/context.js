@@ -87,19 +87,19 @@ async function getEffectiveProject() {
   const knownProject = getProjectByFolder(cwd);
   const isDifferentFolder = cwd !== ctx.lastFolder;
 
-  console.log(`📂 Current folder: ${cwd}`);
-  console.log(`📦 Folder name: ${folderName}`);
-  console.log(`📘 Known project for this folder: ${knownProject}`);
-  console.log("🧠 Context before processing:", ctx);
+  // console.log(`📂 Current folder: ${cwd}`);
+  // console.log(`📦 Folder name: ${folderName}`);
+  // console.log(`📘 Known project for this folder: ${knownProject}`);
+  // console.log("🧠 Context before processing:", ctx);
 
   if (ctx.manual) {
     if (!knownProject) {
       // Unknown folder -> disable manual mode
-      console.log("❓ Folder not registered — turning off manual mode and using folder-based switch");
+      // console.log("❓ Folder not registered — turning off manual mode and using folder-based switch");
       ctx.manual = false;
     } else {
       // Still in known/registered project — stay in manually selected project
-      console.log("🔒 Manual mode ON & folder known — staying in:", ctx.current);
+      // console.log("🔒 Manual mode ON & folder known — staying in:", ctx.current);
       ctx.lastFolder = cwd;
       await writeContext(ctx);
       return ctx.current;
@@ -115,7 +115,7 @@ async function getEffectiveProject() {
     currentProject = folderName;
     console.log(`🆕 Registered new project: ${folderName} -> ${cwd}`);
   } else {
-    console.log(`✅ Match found: ${currentProject}`);
+    // console.log(`✅ Match found: ${currentProject}`);
   }
 
   ctx.current = currentProject;

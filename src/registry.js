@@ -11,6 +11,11 @@ function ensureRegistryExists() {
   }
 }
 
+function getRegisteredFolders() {
+  const registry = getRegistry();
+  return Object.values(registry);
+}
+
 function getRegistry() {
   ensureRegistryExists();
   return JSON.parse(fs.readFileSync(REGISTRY_PATH, "utf-8"));
@@ -23,13 +28,13 @@ function saveRegistry(data) {
 function registerProject(name, folder) {
   const reg = getRegistry();
   if (reg[name] && reg[name] !== folder) {
-    console.warn(`⚠️ Project "${name}" already registered to: ${reg[name]}`);
-    console.warn(`⛔ Skipping registration to avoid overwriting existing mapping.`);
+    // console.warn(`⚠️ Project "${name}" already registered to: ${reg[name]}`);
+    // console.warn(`⛔ Skipping registration to avoid overwriting existing mapping.`);
     return;
   }
   reg[name] = folder;
   saveRegistry(reg);
-  console.log(`✅ Registered "${name}" -> "${folder}"`);
+  // console.log(`✅ Registered "${name}" -> "${folder}"`);
 }
 
 
@@ -46,19 +51,19 @@ function getProjectByFolder(folderPath) {
   const registry = getRegistry();
   const target = path.resolve(folderPath);
 
-  console.log("📁 Looking for:", target);
-  console.log("📚 Registry contents:", registry);
+  // console.log("📁 Looking for:", target);
+  // console.log("📚 Registry contents:", registry);
 
   for (const [project, p] of Object.entries(registry)) {
     const resolvedPath = path.resolve(p);
-    console.log(`➡️  Checking ${project}: ${resolvedPath}`);
+    // console.log(`➡️  Checking ${project}: ${resolvedPath}`);
     if (resolvedPath === target) {
-      console.log(`✅ Match found: ${project}`);
+      // console.log(`✅ Match found: ${project}`);
       return project;
     }
   }
 
-  console.log("❌ No match found");
+  // console.log("❌ No match found");
   return null;
 }
 
@@ -71,5 +76,6 @@ module.exports = {
   registerProject,
   getFolderByProject,
   getProjectByFolder,
-  getAllRegisteredProjects
+  getAllRegisteredProjects,
+  getRegisteredFolders
 };

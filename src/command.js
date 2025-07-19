@@ -2,7 +2,7 @@ const yargs = require("yargs");
 const { hideBin } = require("yargs/helpers");
 const { getFolderByProject, registerProject } = require('./registry');
 const { getEffectiveProject,writeContext } = require("./context");
-const { getRegisteredFolders } = require("./registry");
+// const { getRegisteredFolders } = require("./registry");
 
 
 const {
