@@ -50,13 +50,13 @@ dev new "Improve authentication strategy"
 
 #### 🔀 2. Switch Context Temporarily
 
-Use this when you want to log under a different project without changing folders:
+Use this when you want to log under a different project without changing folders !:
 
 ```bash
 dev switch-to backend
 ```
 
-➡️ Logs will now go under `backend` until you change folders.
+➡️ Logs will now go under `backend` until a new project is encountered or is registered.
 
 #### 🚶 3. Folder Change = Context Reset
 
@@ -74,7 +74,7 @@ cd ../ExpenseTracker
 | ------------------------------- | ----------------- |
 | Inside a folder (no switch)     | Folder name       |
 | After `dev switch-to <project>` | Switched project  |
-| After folder change             | Folder name again |
+| After new project encountered   | Folder name again |
 
 ---
 
@@ -98,7 +98,7 @@ cd ../ExpenseTracker
 ### ➕ New Commands
 
 * `dev switch-to <project>` – switch context manually (local to current folder)
-* `dev resume` – return to your last working context in that folder
+* `dev resume` – return to your last working context in that folder (context switch)
 * `dev context` – view current effective project
 * `dev all` – view logs from `local`, `global`, or `all` scopes
 * `dev search` – fuzzy or exact search with `--scope`, `--tags`, `--author`, etc.
@@ -148,10 +148,13 @@ dev search --project ExpenseTracker --tags design
 # 11. View current project context
 dev context
 
-# 12. View global logs
+# 12. Resume work from your current project
+dev resume
+
+# 13. View global logs
 dev all --scope global
 
-# 13. Clean logs
+# 14. Clean logs
 dev clean
 ```
 
