@@ -1,7 +1,7 @@
 const yargs = require("yargs");
 const { hideBin } = require("yargs/helpers");
-const { getFolderByProject, registerFolder } = require('./registry');
-const { getEffectiveProject } = require("./context");
+const { getFolderByProject, registerProject } = require('./registry');
+const { getEffectiveProject,writeContext } = require("./context");
 const { getRegisteredFolders } = require("./registry");
 
 
@@ -241,6 +241,12 @@ cli
     await registerProject(ctx.current);
     await switchProject(ctx.current, proj.last_note || "");
 
+    // ✅ Update context after resume
+    ctx.current = ctx.current;
+    ctx.manual = true;
+    ctx.lastFolder = "";
+    await writeContext(ctx);
+
     const logs = await getAllLogs();
     const projectLogs = logs.filter(log => log.project === ctx.current);
 
@@ -259,7 +265,6 @@ cli
     console.log("Let's continue!");
   }
 )
-
 
 
   

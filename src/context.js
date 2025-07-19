@@ -132,4 +132,5 @@ module.exports = {
   updateContext,
   getEffectiveProject,
   getContext,
+  writeContext 
 };
